@@ -1,0 +1,73 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Рассылки</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'emails/css/emails.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="{% static 'emails/js/emails.js' %}"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Email Рассылки</h1>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#campaignModal">Создать рассылку</button>
+
+        <!-- Список рассылок -->
+        <div id="campaign-list">
+            <h3>Список рассылок</h3>
+            <ul class="list-group">
+                {% for campaign in campaigns %}
+                    <li class="list-group-item">
+                        <strong>{{ campaign.template.subject }}</strong>
+                        - {{ campaign.scheduled_time }}
+                        ({{ campaign.subscribers.count }} подписчиков)
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div id="campaignModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Создать рассылку</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="campaign-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Выберите шаблон:</label>
+                            <select name="template" class="form-control">
+                                {% for template in templates %}
+                                    <option value="{{ template.id }}">{{ template.subject }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Выберите подписчиков:</label>
+                            <select name="subscribers" class="form-control" multiple>
+                                {% for subscriber in subscribers %}
+                                    <option value="{{ subscriber.id }}">{{ subscriber.email }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Время отправки:</label>
+                            <input type="datetime-local" name="scheduled_time" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-success">Создать</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
