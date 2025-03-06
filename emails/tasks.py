@@ -1,11 +1,11 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import logging
 
 from celery import task
 from django.core.mail import send_mail
 # from string import Template
 
-from emails.models import EmailCampaign
+from emails.models import SendingEmails
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def send_email_campaign(self, campaign_id):
     """Отправка email-рассылки подписчикам"""
 
     try:
-        campaign = EmailCampaign.objects \
+        campaign = SendingEmails.objects \
             .select_related('template') \
             .prefetch_related('subscribers') \
             .get(id=campaign_id)
@@ -68,7 +68,7 @@ def send_email_campaign(self, campaign_id):
         campaign.is_sent = errors == 0
         campaign.save()
 
-    except EmailCampaign.DoesNotExist:
+    except SendingEmails.DoesNotExist:
         logger.error(u'Кампания с ID {} не найдена.'.format(campaign_id))
     except Exception as e:
         logger.critical(u'Ошибка: {}'.format(e))

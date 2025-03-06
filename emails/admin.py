@@ -1,6 +1,6 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from django.contrib import admin
-from emails.models import Subscriber, EmailTemplate, EmailCampaign
+from emails.models import Subscriber, EmailTemplate, SendingEmails
 
 
 class SubscriberAdmin(admin.ModelAdmin):
@@ -27,7 +27,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     preview_body.short_description = u'Превью тела письма'
 
 
-class EmailCampaignAdmin(admin.ModelAdmin):
+class SendingEmailsAdmin(admin.ModelAdmin):
     list_display = ('template', 'scheduled_time', 'is_sent', 'subscriber_count')
     list_filter = ('is_sent', 'scheduled_time')
     search_fields = ('template__subject',)
@@ -53,4 +53,4 @@ class EmailCampaignAdmin(admin.ModelAdmin):
 
 admin.site.register(Subscriber, SubscriberAdmin)
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
-admin.site.register(EmailCampaign, EmailCampaignAdmin)
+admin.site.register(SendingEmails, SendingEmailsAdmin)

@@ -12,23 +12,25 @@
     <script src="{% static 'emails/js/emails.js' %}"></script>
 </head>
 <body>
-
     <div class="container">
         <h1>Email Рассылки</h1>
         <button class="btn btn-primary" data-toggle="modal" data-target="#campaignModal">Создать рассылку</button>
 
-        <!-- Список рассылок -->
         <div id="campaign-list">
             <h3>Список рассылок</h3>
-            <ul class="list-group">
-                {% for campaign in campaigns %}
-                    <li class="list-group-item">
-                        <strong>{{ campaign.template.subject }}</strong>
-                        - {{ campaign.scheduled_time }}
-                        ({{ campaign.subscribers.count }} подписчиков)
-                    </li>
-                {% endfor %}
-            </ul>
+            {% if campaigns %}
+                <ul class="list-group">
+                    {% for campaign in campaigns %}
+                        <li class="list-group-item">
+                            <strong>{{ campaign.template.subject }}</strong>
+                            - {{ campaign.scheduled_time }}
+                            ({{ campaign.subscribers.count }} подписчиков)
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Нет созданных рассылок.</p>
+            {% endif %}
         </div>
     </div>
 
@@ -68,6 +70,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

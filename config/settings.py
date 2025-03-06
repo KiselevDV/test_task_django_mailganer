@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # 3rd library
+    'django_extensions',
     'djcelery',
     'kombu.transport.django',
 

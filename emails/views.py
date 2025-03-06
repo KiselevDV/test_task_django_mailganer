@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import logging
 
 from datetime import timedelta
@@ -6,26 +6,27 @@ from datetime import timedelta
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware
 
-from emails.models import EmailCampaign, EmailTemplate, Subscriber
+from emails.models import SendingEmails, EmailTemplate, Subscriber
 
 logger = logging.getLogger(__name__)
 
 
 def campaign_page(request):
-    """Главная страница с формой для создания рассылок"""
+    """Главная страница с формой, для создания рассылок"""
 
     templates = EmailTemplate.objects.all()
     subscribers = Subscriber.objects.all()
+    campaigns = SendingEmails.objects.all().select_related('template')
     return render(
         request, 'emails/base.html',
-        {'templates': templates, 'subscribers': subscribers}
+        {'templates': templates, 'subscribers': subscribers, 'campaigns': campaigns}
     )
 
 
 def create_campaign(request):
-    """Обработчик AJAX-запроса для создания email-рассылки"""
+    """Обработчик AJAX-запроса, для создания email-рассылки"""
 
     if request.method == "POST":
         template_id = request.POST.get('template_id')
@@ -41,15 +42,19 @@ def create_campaign(request):
         if scheduled_time is None:
             return JsonResponse({'success': False, 'error': u'Некорректная дата'})
 
+        if scheduled_time.tzinfo is None:
+            scheduled_time = make_aware(scheduled_time)
+
         if scheduled_time < now():
             scheduled_time = now() + timedelta(minutes=1)
 
-        campaign = EmailCampaign.objects.create(
+        campaign = SendingEmails.objects.create(
             template=template,
             scheduled_time=scheduled_time
         )
 
-        subscriber_ids = request.POST.getlist('subscribers')
+        subscriber_ids = request.POST.get('subscribers', '').split(',')
+        subscriber_ids = [s.strip() for s in subscriber_ids if s.strip().isdigit()]
         if not subscriber_ids:
             return JsonResponse({'success': False, 'error': u'Не выбраны подписчики'})
 
@@ -68,8 +73,24 @@ def create_campaign(request):
     return JsonResponse({'success': False, 'error': u'Метод не поддерживается'})
 
 
+def get_campaigns(request):
+    """Возврат списока созданных рассылок"""
+
+    campaigns = SendingEmails.objects.all().select_related('template')
+    data = [
+        {
+            'id': campaign.id,
+            'template_subject': campaign.template.subject,
+            'scheduled_time': campaign.scheduled_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'subscribers_count': campaign.subscribers.count(),
+        }
+        for campaign in campaigns
+    ]
+    return JsonResponse(data, safe=False)
+
+
 def track_email_open(request, subscriber_id):
-    """Обработчик для отслеживания открытия письма"""
+    """Обработчик, для отслеживания открытия письма"""
 
     try:
         subscriber = Subscriber.objects.get(id=subscriber_id)

@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.utils import timezone
 
@@ -16,8 +16,8 @@ class Subscriber(models.Model):
         verbose_name_plural=u'Подписчики'
         ordering = ('first_name', 'last_name')
 
-    def __str__(self):
-        return '{} {} ({})'.format(self.first_name, self.last_name, self.email)
+    def __unicode__(self):
+        return u'{} {} ({})'.format(self.first_name, self.last_name, self.email)
 
 
 class EmailTemplate(models.Model):
@@ -32,11 +32,11 @@ class EmailTemplate(models.Model):
         verbose_name=u'Шаблон письма'
         verbose_name_plural=u'Шаблоны писем'
 
-    def __str__(self):
-        return self.subject
+    def __unicode__(self):
+        return u'{}'.format(self.subject)
 
 
-class EmailCampaign(models.Model):
+class SendingEmails(models.Model):
     template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE, verbose_name=u'Шаблон')
     subscribers = models.ManyToManyField(Subscriber, verbose_name=u'Подписчики')
     scheduled_time = models.DateTimeField(default=timezone.now, verbose_name=u'Время отправки')
@@ -47,6 +47,8 @@ class EmailCampaign(models.Model):
         verbose_name_plural=u'Рассылки'
         ordering = ('-scheduled_time', )
 
-    def __str__(self):
-        return ('Рассылка: ' + self.template.subject + ' (' +
-                ('Отправлено' if self.is_sent else 'Ожидает отправки') + ')')
+    def __unicode__(self):
+        return (
+            u'Рассылка: {} ({})'
+            .format(self.template.subject, u'Отправлено' if self.is_sent else u'Ожидает отправки')
+        )
